@@ -1,10 +1,13 @@
 # Student Result Management System
 
+A web-based application for managing student results and attendance.
+
 ## Features
-- Teacher Login
 - Student Login
-- Attendance Management
-- Marks Management
+- Teacher Login
+- Result Management
+- Attendance Tracking
+- Responsive UI
 
 ## Technologies Used
 - HTML
@@ -12,5 +15,5 @@
 - JavaScript
 - Firebase
 
-## How to Run
-Open index.html in browser
+## Author
+Vishvas Dhama
