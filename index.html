@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finacer - Premium Finance Management</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Login Form -->
+        <div class="auth-box" id="loginBox">
+            <div class="auth-header">
+                <div class="logo">💰</div>
+                <h1>Finacer</h1>
+                <p>Premium Finance Management</p>
+            </div>
+
+            <form id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+                    <input 
+                        type="email" 
+                        id="loginEmail" 
+                        placeholder="Enter your email"
+                        required
+                    >
+                    <span class="error-msg" id="loginEmailError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input 
+                        type="password" 
+                        id="loginPassword" 
+                        placeholder="Enter your password"
+                        required
+                    >
+                    <span class="error-msg" id="loginPasswordError"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                    <span>Login</span>
+                    <span class="loader" id="loginLoader"></span>
+                </button>
+                <span class="error-msg" id="loginError"></span>
+            </form>
+
+            <div class="auth-footer">
+                <p>Don't have an account? 
+                    <a href="#" onclick="toggleForms(); return false;">Sign Up</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Signup Form -->
+        <div class="auth-box hidden" id="signupBox">
+            <div class="auth-header">
+                <div class="logo">💰</div>
+                <h1>Create Account</h1>
+                <p>Join Finacer Today</p>
+            </div>
+
+            <form id="signupForm" class="auth-form">
+                <div class="form-group">
+                    <label for="signupEmail">Email Address</label>
+                    <input 
+                        type="email" 
+                        id="signupEmail" 
+                        placeholder="Enter your email"
+                        required
+                    >
+                    <span class="error-msg" id="signupEmailError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input 
+                        type="password" 
+                        id="signupPassword" 
+                        placeholder="Min. 6 characters"
+                        required
+                    >
+                    <span class="error-msg" id="signupPasswordError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input 
+                        type="password" 
+                        id="confirmPassword" 
+                        placeholder="Confirm your password"
+                        required
+                    >
+                    <span class="error-msg" id="confirmPasswordError"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                    <span>Create Account</span>
+                    <span class="loader" id="signupLoader"></span>
+                </button>
+                <span class="error-msg" id="signupError"></span>
+            </form>
+
+            <div class="auth-footer">
+                <p>Already have an account? 
+                    <a href="#" onclick="toggleForms(); return false;">Login</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <!-- Firebase Configuration -->
+    <script src="assets/js/firebase.js"></script>
+
+    <!-- App JavaScript -->
+    <script src="assets/js/app.js"></script>
+
+    <script>
+        // Toggle between Login and Signup forms
+        function toggleForms() {
+            document.getElementById('loginBox').classList.toggle('hidden');
+            document.getElementById('signupBox').classList.toggle('hidden');
+            clearFormErrors();
+        }
+
+        // Clear all form errors
+        function clearFormErrors() {
+            document.querySelectorAll('.error-msg').forEach(msg => msg.textContent = '');
+        }
+
+        // Login Form Handler
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearFormErrors();
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const loader = document.getElementById('loginLoader');
+
+            try {
+                loader.classList.add('show');
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                console.log('User logged in:', userCredential.user.email);
+                window.location.href = 'dashboard.html';
+            } catch (error) {
+                // Show exact Firebase error for debugging and user feedback
+                const errorMsg = error.message || 'Login failed. Please try again.';
+                document.getElementById('loginError').textContent = `${errorMsg} (${error.code || 'unknown-error'})`;
+                console.error('Login error:', error);
+            } finally {
+                loader.classList.remove('show');
+            }
+        });
+
+        // Signup Form Handler
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearFormErrors();
+
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const loader = document.getElementById('signupLoader');
+
+            // Validation
+            if (password.length < 6) {
+                document.getElementById('signupPasswordError').textContent = 'Password must be at least 6 characters.';
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                document.getElementById('confirmPasswordError').textContent = 'Passwords do not match.';
+                return;
+            }
+
+            try {
+                loader.classList.add('show');
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                console.log('User created:', userCredential.user.email);
+                
+                // Clear forms and show success message
+                document.getElementById('signupForm').reset();
+                document.getElementById('signupError').textContent = 'Account created successfully! Redirecting...';
+                document.getElementById('signupError').style.color = '#4ade80';
+                
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
+            } catch (error) {
+                // Show exact Firebase error for debugging and user feedback
+                const errorMsg = error.message || 'Signup failed. Please try again.';
+                document.getElementById('signupError').textContent = `${errorMsg} (${error.code || 'unknown-error'})`;
+                console.error('Signup error:', error);
+            } finally {
+                loader.classList.remove('show');
+            }
+        });
+
+        // Check if user is already logged in
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    window.location.href = 'dashboard.html';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

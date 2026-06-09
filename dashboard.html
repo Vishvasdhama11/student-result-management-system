@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finacer - Dashboard</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <button class="sidebar-close" type="button" onclick="toggleSidebar()" aria-label="Close navigation">✕</button>
+                <div class="logo-large">💰</div>
+                <h2>Finacer</h2>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-section="dashboard" onclick="showSection('dashboard', event); return false;">
+                    <span class="icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-section="customers" onclick="showSection('customers', event); return false;">
+                    <span class="icon">👥</span>
+                    <span>Customers</span>
+                </a>
+                <a href="#" class="nav-item" data-section="add-customer" onclick="showSection('add-customer', event); return false;">
+                    <span class="icon">➕</span>
+                    <span>Add Customer</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="btn btn-logout" id="logoutBtn">
+                    <span class="icon">🚪</span>
+                    <span>Logout</span>
+                </button>
+                <div class="user-info" id="userInfo"></div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <button class="btn btn-secondary mobile-menu-toggle" type="button" onclick="toggleSidebar()" aria-label="Open navigation">
+                    ☰ Menu
+                </button>
+                <div class="header-left">
+                    <h1>Welcome to Finacer</h1>
+                    <p id="headerSubtitle">Manage your finances efficiently</p>
+                </div>
+                <div class="header-right">
+                    <div class="search-box">
+                        <input 
+                            type="text" 
+                            id="globalSearch" 
+                            placeholder="Search customers..."
+                            class="search-input"
+                        >
+                        <span class="search-icon">🔍</span>
+                    </div>
+                    <div class="header-time" id="currentTime"></div>
+                </div>
+            </header>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="section active">
+                <div class="stats-grid">
+                    <div class="stat-card glass-effect">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-content">
+                            <h3>Total Customers</h3>
+                            <p class="stat-value" id="totalCustomers">0</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card glass-effect">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-content">
+                            <h3>Total Principal</h3>
+                            <p class="stat-value" id="totalPrincipal">₹0</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card glass-effect">
+                        <div class="stat-icon">📈</div>
+                        <div class="stat-content">
+                            <h3>Total Interest</h3>
+                            <p class="stat-value" id="totalInterest">₹0</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card glass-effect">
+                        <div class="stat-icon">✨</div>
+                        <div class="stat-content">
+                            <h3>Total Amount</h3>
+                            <p class="stat-value" id="totalAmount">₹0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recent-customers">
+                    <h2>Recent Customers</h2>
+                    <div class="customers-preview" id="recentCustomersContainer">
+                        <p class="empty-state">No customers yet. Add one to get started!</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Customers Section -->
+            <section id="customers" class="section">
+                <div class="section-header">
+                    <h2>All Customers</h2>
+                    <div class="section-actions">
+                        <input 
+                            type="text" 
+                            id="customerSearch" 
+                            placeholder="Search by name, phone, guarantor, status or tag..."
+                            class="search-input"
+                        >
+                        <button class="btn btn-secondary" onclick="exportCustomerCSV()">
+                            📤 Export CSV
+                        </button>
+                        <button class="btn btn-secondary" onclick="downloadSummaryReport()">
+                            📄 Download Report
+                        </button>
+                        <button class="btn btn-secondary" onclick="showSection('add-customer', event)">
+                            ➕ Add Customer
+                        </button>
+                    </div>
+                </div>
+
+                <div class="customers-table-container">
+                    <table class="customers-table" id="customersTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Date</th>
+                                <th>Principal</th>
+                                <th>Interest %</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Tags</th>
+                                <th>Guarantor</th>
+                                <th>Days</th>
+                                <th>Total Interest</th>
+                                <th>Final Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customersTableBody">
+                            <tr class="empty-row">
+                                <td colspan="13" class="empty-state">No customers found. Start by adding a customer!</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Add Customer Section -->
+            <section id="add-customer" class="section">
+                <div class="section-header">
+                    <h2>Add New Customer</h2>
+                </div>
+
+                <form id="addCustomerForm" class="customer-form glass-effect">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customerName">Customer Name *</label>
+                            <input 
+                                type="text" 
+                                id="customerName" 
+                                placeholder="Enter customer name"
+                                required
+                            >
+                            <span class="error-msg" id="nameError"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="startDate">Start Date *</label>
+                            <input 
+                                type="date" 
+                                id="startDate"
+                                required
+                            >
+                            <span class="error-msg" id="dateError"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="customerPhone">Phone Number <span class="optional-label">(optional)</span></label>
+                            <input 
+                                type="tel" 
+                                id="customerPhone" 
+                                placeholder="Enter phone number (optional)"
+                            >
+                            <span class="error-msg" id="phoneError"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="principalAmount">Principal Amount (₹) *</label>
+                            <input 
+                                type="number" 
+                                id="principalAmount" 
+                                placeholder="Enter amount"
+                                min="0"
+                                step="0.01"
+                                required
+                            >
+                            <span class="error-msg" id="principalError"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="interestPercentage">Interest Percentage (%) *</label>
+                            <input 
+                                type="number" 
+                                id="interestPercentage" 
+                                placeholder="Enter interest %"
+                                min="0"
+                                step="0.01"
+                                required
+                            >
+                            <span class="error-msg" id="interestError"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="interestType">Interest Type *</label>
+                            <select id="interestType" required>
+                                <option value="">Select Interest Type</option>
+                                <option value="monthly">Per Month</option>
+                                <option value="yearly">Per Year</option>
+                            </select>
+                            <small class="field-help">For example, 5% Per Month means ₹5000 × 5% = ₹250 for one month.</small>
+                            <span class="error-msg" id="typeError"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="customerStatus">Status *</label>
+                            <select id="customerStatus" required>
+                                <option value="Active">Active</option>
+                                <option value="Overdue">Overdue</option>
+                                <option value="Closed">Closed</option>
+                            </select>
+                            <span class="error-msg" id="statusError"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="customerTags">Tags / Labels</label>
+                            <input
+                                type="text"
+                                id="customerTags"
+                                placeholder="Enter tags separated by commas"
+                            >
+                            <small class="field-help">Use commas to add multiple tags like Retail, VIP, Rent.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="guarantorName">Guarantor</label>
+                            <input 
+                                type="text"
+                                id="guarantorName"
+                                placeholder="Enter guarantor name"
+                            >
+                            <span class="error-msg" id="guarantorError"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            💾 Add Customer
+                        </button>
+                        <button type="reset" class="btn btn-secondary">
+                            🔄 Clear
+                        </button>
+                    </div>
+
+                    <span class="success-msg" id="formSuccess"></span>
+                    <span class="error-msg" id="formError"></span>
+                </form>
+
+                <!-- Preview Section -->
+                <div class="preview-section glass-effect" id="previewSection" style="display: none;">
+                    <h3>Calculation Preview</h3>
+                    <div class="preview-grid">
+                        <div class="preview-item">
+                            <span>Days Passed:</span>
+                            <strong id="previewDays">0</strong>
+                        </div>
+                        <div class="preview-item">
+                            <span>Daily Interest:</span>
+                            <strong>₹<span id="previewDailyInterest">0</span></strong>
+                        </div>
+                        <div class="preview-item">
+                            <span>Total Interest:</span>
+                            <strong>₹<span id="previewTotalInterest">0</span></strong>
+                        </div>
+                        <div class="preview-item">
+                            <span id="previewCycleLabel">Periodic Interest</span>:
+                            <strong>₹<span id="previewCycleInterest">0</span></strong>
+                        </div>
+                        <div class="preview-item">
+                            <span>Final Amount:</span>
+                            <strong>₹<span id="previewFinalAmount">0</span></strong>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content glass-effect">
+            <div class="modal-header">
+                <h2>Edit Customer</h2>
+                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+            </div>
+
+            <form id="editCustomerForm" class="customer-form">
+                <input type="hidden" id="editCustomerId">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editCustomerName">Customer Name *</label>
+                        <input 
+                            type="text" 
+                            id="editCustomerName" 
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editStartDate">Start Date *</label>
+                        <input 
+                            type="date" 
+                            id="editStartDate"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editPhoneNumber">Phone Number <span class="optional-label">(optional)</span></label>
+                        <input 
+                            type="tel" 
+                            id="editPhoneNumber"
+                            placeholder="Enter phone number (optional)"
+                            inputmode="numeric"
+                            pattern="[0-9]*"
+                            maxlength="20"
+                        >
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editPrincipalAmount">Principal Amount (₹) *</label>
+                        <input 
+                            type="number" 
+                            id="editPrincipalAmount" 
+                            min="0"
+                            step="0.01"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editGuarantorName">Guarantor</label>
+                        <input 
+                            type="text" 
+                            id="editGuarantorName"
+                            placeholder="Enter guarantor name"
+                        >
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editInterestPercentage">Interest Percentage (%) *</label>
+                        <input 
+                            type="number" 
+                            id="editInterestPercentage" 
+                            min="0"
+                            step="0.01"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editInterestType">Interest Type *</label>
+                        <select id="editInterestType" required>
+                            <option value="monthly">Per Month</option>
+                            <option value="yearly">Per Year</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editStatus">Status *</label>
+                        <select id="editStatus" required>
+                            <option value="Active">Active</option>
+                            <option value="Overdue">Overdue</option>
+                            <option value="Closed">Closed</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="editTags">Tags / Labels</label>
+                        <input
+                            type="text"
+                            id="editTags"
+                            placeholder="Enter tags separated by commas"
+                        >
+                        <small class="field-help">Use commas to add multiple tags like Retail, VIP, Rent.</small>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">❌ Cancel</button>
+                </div>
+            </form>
+
+            <div class="payment-history-panel">
+                <div class="payment-history-header">
+                    <h3>Payment History</h3>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="exportPaymentHistoryCSV(document.getElementById('editCustomerId').value)">📤 Export Payments</button>
+                </div>
+                <div id="paymentHistoryList" class="payment-history-list">
+                    <p class="empty-state">No payments recorded yet.</p>
+                </div>
+
+                <div class="payment-entry">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="paymentDate">Payment Date</label>
+                            <input type="date" id="paymentDate">
+                        </div>
+                        <div class="form-group">
+                            <label for="paymentAmount">Amount (₹)</label>
+                            <input type="number" id="paymentAmount" min="0" step="1" inputmode="numeric" pattern="[0-9]*">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="paymentNote">Payment Note</label>
+                            <input type="text" id="paymentNote" placeholder="Enter payment note (optional)">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-primary" onclick="addPaymentToCustomer()">➕ Add Payment</button>
+                    </div>
+                    <span class="success-msg" id="paymentSuccess"></span>
+                    <span class="error-msg" id="paymentError"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <!-- Firebase Configuration -->
+    <script src="assets/js/firebase.js"></script>
+
+    <!-- App JavaScript -->
+    <script src="assets/js/app.js"></script>
+</body>
+</html>

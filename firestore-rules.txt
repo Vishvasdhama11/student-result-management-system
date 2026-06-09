@@ -1,0 +1,56 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    },
+
+    "customers": {
+      "$uid": {
+        "$customerId": {
+
+          ".read": "$uid === auth.uid",
+          ".write": "$uid === auth.uid",
+
+          ".validate": "
+            newData.hasChildren([
+              'name',
+              'date',
+              'amount',
+              'interest',
+              'type',
+              'days',
+              'totalInterest',
+              'finalAmount'
+            ]) &&
+
+            newData.child('name').isString() &&
+            newData.child('name').val().length > 0 &&
+
+            newData.child('date').isString() &&
+
+            newData.child('amount').isNumber() &&
+            newData.child('amount').val() > 0 &&
+
+            newData.child('interest').isNumber() &&
+            newData.child('interest').val() >= 0 &&
+
+            (
+              newData.child('type').val() === 'month' ||
+              newData.child('type').val() === 'year'
+            ) &&
+
+            newData.child('days').isNumber() &&
+            newData.child('days').val() >= 0 &&
+
+            newData.child('totalInterest').isNumber() &&
+
+            newData.child('finalAmount').isNumber()
+          "
+        }
+      }
+    }
+  }
+}
